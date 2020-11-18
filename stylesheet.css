@@ -1,0 +1,56 @@
+#board {
+    width: 80vh;
+    height: 80vh;
+    border: 1px solid gray;
+    padding: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    background-color:black;
+    user-select: none;
+}
+
+.square {
+    position: relative;
+    width: 12.5%;
+    height: 100%;
+    float: left;
+    padding: 0px;
+    margin: 0px;
+}
+
+.rank {
+    position: relative;
+    width: 100%;
+    height: 12.5%;
+    padding: 0px;
+    margin: 0px;
+}
+
+.sq-green {
+    background-color: #558000;
+}
+
+.sq-white {
+    background-color: #f7ffe6;
+}
+
+.piece {
+    width: 100%;
+    height: 100%;
+    padding: none;
+    margin: none;
+    border: none;
+}
+
+.legalMove {
+    width: 100%;
+    height: 100%;
+    padding: none;
+    margin: none;
+    border: none;
+}
+
+.piece-legal-move {
+    background-color:#ff8080;
+}

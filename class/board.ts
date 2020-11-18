@@ -106,7 +106,7 @@ export class Board {
         return squares;
     }
 
-    private refreshBoard(){
+    private refreshBoard(justUndidMove?: boolean){
         let element;
 
         for(let i = 0; i < this.squares.length; i++){
@@ -116,12 +116,19 @@ export class Board {
                 element.innerHTML = this.squares[i][j].getInnerHTML();
             }
         }
-
-        if(!this.whiteToMove){
-            this.takeAIMove();
+        if(!justUndidMove){
+            console.log(this.whiteToMove);
         }
 
-        //console.log(Board.evaluatePosition(this, 4, this.whiteToMove));
+        if(!this.whiteToMove && !justUndidMove){
+            let self = this;
+            setTimeout(function(){
+                self.takeAIMove();
+            }, 10);
+            
+        }
+
+        console.log(this.history);
 
         this.addDynamicEventListeners();
     }
@@ -534,7 +541,7 @@ export class Board {
         this.whiteToMove = !this.whiteToMove;
 
         if(refreshBoard){
-            this.refreshBoard();
+            this.refreshBoard(true);
         }
     }
 

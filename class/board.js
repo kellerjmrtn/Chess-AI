@@ -81,7 +81,7 @@ export class Board {
         squares[7][7] = new Square(7, 7, new Rook(false));
         return squares;
     }
-    refreshBoard() {
+    refreshBoard(justUndidMove) {
         let element;
         for (let i = 0; i < this.squares.length; i++) {
             for (let j = 0; j < this.squares[i].length; j++) {
@@ -89,10 +89,16 @@ export class Board {
                 element.innerHTML = this.squares[i][j].getInnerHTML();
             }
         }
-        if (!this.whiteToMove) {
-            this.takeAIMove();
+        if (!justUndidMove) {
+            console.log(this.whiteToMove);
         }
-        //console.log(Board.evaluatePosition(this, 4, this.whiteToMove));
+        if (!this.whiteToMove && !justUndidMove) {
+            let self = this;
+            setTimeout(function () {
+                self.takeAIMove();
+            }, 10);
+        }
+        console.log(this.history);
         this.addDynamicEventListeners();
     }
     attemptMove(move) {
@@ -437,7 +443,7 @@ export class Board {
         this.turn--;
         this.whiteToMove = !this.whiteToMove;
         if (refreshBoard) {
-            this.refreshBoard();
+            this.refreshBoard(true);
         }
     }
     static evaluatePosition(boardState, depth, currentPlayer) {

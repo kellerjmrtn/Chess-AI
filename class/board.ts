@@ -10,6 +10,8 @@ export class Board {
     selectedPiece: Element;
     history: Move[];
     whiteToMove: boolean;
+    whiteHasCastled: boolean;
+    blackHasCastled: boolean;
 
     constructor(){
         this.turn = 0;
@@ -18,6 +20,8 @@ export class Board {
         this.selectedPiece = null;
         this.history = [];
         this.whiteToMove = true;
+        this.whiteHasCastled = false;
+        this.blackHasCastled = false;
     }
 
     private addStaticEventListeners(){
@@ -40,6 +44,7 @@ export class Board {
                         if(!(rankStart == rankEnd && fileStart == fileEnd)){
                             let move: Move = new Move([rankStart, fileStart], [rankEnd, fileEnd], self);
     
+
                             self.attemptMove(move);
                         }
                     } else {
@@ -116,9 +121,6 @@ export class Board {
                 element.innerHTML = this.squares[i][j].getInnerHTML();
             }
         }
-        if(!justUndidMove){
-            console.log(this.whiteToMove);
-        }
 
         if(!this.whiteToMove && !justUndidMove){
             let self = this;
@@ -127,8 +129,6 @@ export class Board {
             }, 10);
             
         }
-
-        console.log(this.history);
 
         this.addDynamicEventListeners();
     }
@@ -142,11 +142,23 @@ export class Board {
         if(allMoves.some(function(item){
             return item.endFile == move.endFile && item.endRank == move.endRank && item.startFile == move.startFile && item.startRank == move.startRank;
         })){
-            console.log("possible move");
+            //console.log("possible move");
             if(startSquare.contains){
                 startSquare.contains.hasMoved = true;
             }
-    
+
+            if(move.castleKingSide){
+                let rookSquare: Square = this.getSquare([0,7]);
+                this.getSquare([0,5]).contains = rookSquare.contains;
+                rookSquare.contains = null;
+                
+                if(this.whiteToMove){
+                    this.whiteHasCastled = true;
+                } else {
+                    this.blackHasCastled = true;
+                }
+            }
+
             endSquare.contains = startSquare.contains;
             startSquare.contains = null;
             this.history.push(move);
@@ -420,6 +432,25 @@ export class Board {
 
         squareTemp = this.getSquareDown(this.getSquareLeft([rank, file]));
         this.checkLegalMove([rank, file], squareTemp, possibleMoves);
+
+        // Castling
+        if(this.getSquare([rank, file]).contains.hasMoved == false){
+
+            // Kingside Castle
+            squareTemp = this.getSquareRight([rank, file]);
+            if(squareTemp && !this.getSquare(squareTemp).contains){
+                squareTemp = this.getSquareRight(squareTemp);
+    
+                if(squareTemp && !this.getSquare(squareTemp).contains){
+                    squareTemp = this.getSquareRight(squareTemp);
+                    
+                    if(squareTemp && this.getSquare(squareTemp).contains && this.getSquare(squareTemp).contains.name == "rook" && this.getSquare(squareTemp).contains.hasMoved == false){
+                        possibleMoves.push(new Move([rank, file], [rank, file + 2], this));
+                    }
+                }
+            }
+        }
+        
         
         return possibleMoves;
     }
@@ -535,6 +566,18 @@ export class Board {
             }
         }
 
+        if(lastMove.castleKingSide){
+            this.getSquare([0,7]).contains = this.getSquare([0,5]).contains;
+            this.getSquare([0,7]).contains.hasMoved = false;
+            this.getSquare([0,5]).contains = null;
+            
+            if(lastMove.pieceMoved.color){
+                this.whiteHasCastled = false;
+            } else {
+                this.blackHasCastled = false;
+            }
+        }
+
         endSquare.contains = lastMove.pieceMoved;
         startSquare.contains = lastMove.pieceCaptured;
         this.turn--;
@@ -545,7 +588,7 @@ export class Board {
         }
     }
 
-    private static evaluatePosition(boardState: Board, depth: number, currentPlayer: boolean): number {
+    private static evaluatePosition(boardState: Board, depth: number, alpha: number, beta: number, currentPlayer: boolean): number {
         if(depth == 0){
             return Board.evaluateSingularPosition(boardState);
         }
@@ -557,9 +600,13 @@ export class Board {
             let len: number = allPossibleMoves.length;
 
             for(let i = 0; i < len; i++){
-                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, false);
+                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, false);
                 boardState.undoLastMove(false);
                 maxEval = Math.max(maxEval, evaluation);
+                alpha = Math.max(alpha, evaluation);
+                if(beta <= alpha){
+                    break;
+                }
             }
 
             return maxEval;
@@ -570,9 +617,13 @@ export class Board {
             let len: number = allPossibleMoves.length;
 
             for(let i = 0; i < len; i++){
-                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, true);
+                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, true);
                 boardState.undoLastMove(false);
                 minEval = Math.min(minEval, evaluation);
+                beta = Math.min(beta, evaluation);
+                if(beta <= alpha){
+                    break;
+                }
             }
 
             return minEval;
@@ -586,6 +637,13 @@ export class Board {
         let tempScore: number;
         let totalBoardScore: number = 0;
 
+        if(boardState.whiteHasCastled){
+            totalBoardScore += .6;
+        } else if(boardState.blackHasCastled){
+            totalBoardScore -= -10;
+        }
+
+        let numPieces = 0;
         for(let i = 0; i < len; i++){
             len2 = boardState.squares[i].length;
 
@@ -593,17 +651,29 @@ export class Board {
                 contains = boardState.contains([i, j]);
 
                 if(contains){
+                    numPieces++;
                     tempScore = 0;
                     if(contains.name == "pawn"){
                         tempScore = 1;
                     } else if(contains.name == "knight" || contains.name == "bishop"){
                         tempScore = 3;
+                        if(contains.hasMoved){
+                            tempScore += .5;
+                        }
                     } else if(contains.name == "rook"){
                         tempScore = 5;
                     } else if(contains.name == "queen"){
                         tempScore = 9
                     } else if(contains.name == "king"){
-                        tempScore = 100;
+                        if(contains.color){
+                            tempScore = 100;
+                        } else {
+                            tempScore = 300;
+                        }
+
+                        if(!contains.hasMoved){
+                            tempScore += .1;
+                        }
                     }
 
                     if(!contains.color){
@@ -614,7 +684,7 @@ export class Board {
                 }
             }
         }
-
+        
         return totalBoardScore;
     }
 
@@ -626,6 +696,18 @@ export class Board {
 
         if(startSquare.contains){
             startSquare.contains.hasMoved = true;
+        }
+
+        if(move.castleKingSide){
+            let rookSquare: Square = boardState.getSquare([0,7]);
+            boardState.getSquare([0,5]).contains = rookSquare.contains;
+            rookSquare.contains = null;
+
+            if(boardState.whiteToMove){
+                boardState.whiteHasCastled = true;
+            } else {
+                boardState.blackHasCastled = true;
+            }
         }
 
         endSquare.contains = startSquare.contains;
@@ -645,8 +727,10 @@ export class Board {
         let evaluation;
         let currentBestMoves: Move[] = [];
 
+        let time = new Date().getTime();
+        console.log("thinking...");
         for(let i = 0; i < len; i++){
-            evaluation = Board.evaluatePosition(Board.applyMoveToBoard(this, allPossibleMoves[i]), 3, true);
+            evaluation = Board.evaluatePosition(Board.applyMoveToBoard(this, allPossibleMoves[i]), 3, -10000000, 10000000, true);
 
             if(evaluation < minEval){
                 minEval = evaluation;
@@ -658,7 +742,9 @@ export class Board {
 
             this.undoLastMove(false);
         }
+        console.log("Time to calculate: ", new Date().getTime() - time);
 
+        console.log((minEval + 200).toFixed(2));
         this.attemptMove(currentBestMoves[Math.floor(Math.random() * currentBestMoves.length)]);
     }
 

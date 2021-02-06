@@ -12,5 +12,18 @@ export class Move {
         else {
             this.pieceMovedFirstMove = false;
         }
+        let king = board.squares[0][4].contains;
+        let rookKing = board.squares[0][7].contains;
+        let rookQueen = board.squares[0][0].contains;
+        this.castleQueenSide = false;
+        this.castleKingSide = false;
+        if (this.pieceMoved.name == "king" && king && !king.hasMoved) {
+            if (rookKing && !rookKing.hasMoved && this.endRank == 0 && this.endFile == 6) {
+                this.castleKingSide = true;
+            }
+            if (rookQueen && !rookQueen.hasMoved && endSquare == [0, 2]) {
+                this.castleQueenSide = true;
+            }
+        }
     }
 }

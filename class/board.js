@@ -9,6 +9,8 @@ export class Board {
         this.selectedPiece = null;
         this.history = [];
         this.whiteToMove = true;
+        this.whiteHasCastled = false;
+        this.blackHasCastled = false;
     }
     addStaticEventListeners() {
         let self = this;
@@ -89,16 +91,12 @@ export class Board {
                 element.innerHTML = this.squares[i][j].getInnerHTML();
             }
         }
-        if (!justUndidMove) {
-            console.log(this.whiteToMove);
-        }
         if (!this.whiteToMove && !justUndidMove) {
             let self = this;
             setTimeout(function () {
                 self.takeAIMove();
             }, 10);
         }
-        console.log(this.history);
         this.addDynamicEventListeners();
     }
     attemptMove(move) {
@@ -109,9 +107,20 @@ export class Board {
         if (allMoves.some(function (item) {
             return item.endFile == move.endFile && item.endRank == move.endRank && item.startFile == move.startFile && item.startRank == move.startRank;
         })) {
-            console.log("possible move");
+            //console.log("possible move");
             if (startSquare.contains) {
                 startSquare.contains.hasMoved = true;
+            }
+            if (move.castleKingSide) {
+                let rookSquare = this.getSquare([0, 7]);
+                this.getSquare([0, 5]).contains = rookSquare.contains;
+                rookSquare.contains = null;
+                if (this.whiteToMove) {
+                    this.whiteHasCastled = true;
+                }
+                else {
+                    this.blackHasCastled = true;
+                }
             }
             endSquare.contains = startSquare.contains;
             startSquare.contains = null;
@@ -335,6 +344,20 @@ export class Board {
         this.checkLegalMove([rank, file], squareTemp, possibleMoves);
         squareTemp = this.getSquareDown(this.getSquareLeft([rank, file]));
         this.checkLegalMove([rank, file], squareTemp, possibleMoves);
+        // Castling
+        if (this.getSquare([rank, file]).contains.hasMoved == false) {
+            // Kingside Castle
+            squareTemp = this.getSquareRight([rank, file]);
+            if (squareTemp && !this.getSquare(squareTemp).contains) {
+                squareTemp = this.getSquareRight(squareTemp);
+                if (squareTemp && !this.getSquare(squareTemp).contains) {
+                    squareTemp = this.getSquareRight(squareTemp);
+                    if (squareTemp && this.getSquare(squareTemp).contains && this.getSquare(squareTemp).contains.name == "rook" && this.getSquare(squareTemp).contains.hasMoved == false) {
+                        possibleMoves.push(new Move([rank, file], [rank, file + 2], this));
+                    }
+                }
+            }
+        }
         return possibleMoves;
     }
     getAllKnightMoves(rank, file) {
@@ -438,6 +461,17 @@ export class Board {
                 startSquare.contains.hasMoved = false;
             }
         }
+        if (lastMove.castleKingSide) {
+            this.getSquare([0, 7]).contains = this.getSquare([0, 5]).contains;
+            this.getSquare([0, 7]).contains.hasMoved = false;
+            this.getSquare([0, 5]).contains = null;
+            if (lastMove.pieceMoved.color) {
+                this.whiteHasCastled = false;
+            }
+            else {
+                this.blackHasCastled = false;
+            }
+        }
         endSquare.contains = lastMove.pieceMoved;
         startSquare.contains = lastMove.pieceCaptured;
         this.turn--;
@@ -446,7 +480,7 @@ export class Board {
             this.refreshBoard(true);
         }
     }
-    static evaluatePosition(boardState, depth, currentPlayer) {
+    static evaluatePosition(boardState, depth, alpha, beta, currentPlayer) {
         if (depth == 0) {
             return Board.evaluateSingularPosition(boardState);
         }
@@ -456,9 +490,13 @@ export class Board {
             let allPossibleMoves = boardState.getAllPossibleMoves();
             let len = allPossibleMoves.length;
             for (let i = 0; i < len; i++) {
-                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, false);
+                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, false);
                 boardState.undoLastMove(false);
                 maxEval = Math.max(maxEval, evaluation);
+                alpha = Math.max(alpha, evaluation);
+                if (beta <= alpha) {
+                    break;
+                }
             }
             return maxEval;
         }
@@ -468,9 +506,13 @@ export class Board {
             let allPossibleMoves = boardState.getAllPossibleMoves();
             let len = allPossibleMoves.length;
             for (let i = 0; i < len; i++) {
-                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, true);
+                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, true);
                 boardState.undoLastMove(false);
                 minEval = Math.min(minEval, evaluation);
+                beta = Math.min(beta, evaluation);
+                if (beta <= alpha) {
+                    break;
+                }
             }
             return minEval;
         }
@@ -481,17 +523,28 @@ export class Board {
         let contains;
         let tempScore;
         let totalBoardScore = 0;
+        if (boardState.whiteHasCastled) {
+            totalBoardScore += .6;
+        }
+        else if (boardState.blackHasCastled) {
+            totalBoardScore -= -10;
+        }
+        let numPieces = 0;
         for (let i = 0; i < len; i++) {
             len2 = boardState.squares[i].length;
             for (let j = 0; j < len2; j++) {
                 contains = boardState.contains([i, j]);
                 if (contains) {
+                    numPieces++;
                     tempScore = 0;
                     if (contains.name == "pawn") {
                         tempScore = 1;
                     }
                     else if (contains.name == "knight" || contains.name == "bishop") {
                         tempScore = 3;
+                        if (contains.hasMoved) {
+                            tempScore += .5;
+                        }
                     }
                     else if (contains.name == "rook") {
                         tempScore = 5;
@@ -500,7 +553,15 @@ export class Board {
                         tempScore = 9;
                     }
                     else if (contains.name == "king") {
-                        tempScore = 100;
+                        if (contains.color) {
+                            tempScore = 100;
+                        }
+                        else {
+                            tempScore = 300;
+                        }
+                        if (!contains.hasMoved) {
+                            tempScore += .1;
+                        }
                     }
                     if (!contains.color) {
                         tempScore *= -1;
@@ -518,6 +579,17 @@ export class Board {
         if (startSquare.contains) {
             startSquare.contains.hasMoved = true;
         }
+        if (move.castleKingSide) {
+            let rookSquare = boardState.getSquare([0, 7]);
+            boardState.getSquare([0, 5]).contains = rookSquare.contains;
+            rookSquare.contains = null;
+            if (boardState.whiteToMove) {
+                boardState.whiteHasCastled = true;
+            }
+            else {
+                boardState.blackHasCastled = true;
+            }
+        }
         endSquare.contains = startSquare.contains;
         startSquare.contains = null;
         boardState.history.push(move);
@@ -532,8 +604,10 @@ export class Board {
         let minEval = 1000000;
         let evaluation;
         let currentBestMoves = [];
+        let time = new Date().getTime();
+        console.log("thinking...");
         for (let i = 0; i < len; i++) {
-            evaluation = Board.evaluatePosition(Board.applyMoveToBoard(this, allPossibleMoves[i]), 3, true);
+            evaluation = Board.evaluatePosition(Board.applyMoveToBoard(this, allPossibleMoves[i]), 3, -10000000, 10000000, true);
             if (evaluation < minEval) {
                 minEval = evaluation;
                 currentBestMoves = [];
@@ -544,6 +618,8 @@ export class Board {
             }
             this.undoLastMove(false);
         }
+        console.log("Time to calculate: ", new Date().getTime() - time);
+        console.log((minEval + 200).toFixed(2));
         this.attemptMove(currentBestMoves[Math.floor(Math.random() * currentBestMoves.length)]);
     }
     beginGame() {

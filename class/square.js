@@ -1,5 +1,8 @@
-export class Square {
-    constructor(rank, file, contains) {
+"use strict";
+exports.__esModule = true;
+exports.Square = void 0;
+var Square = /** @class */ (function () {
+    function Square(rank, file, contains) {
         this.currLegalMove = false;
         this.rank = rank;
         this.file = file;
@@ -10,7 +13,7 @@ export class Square {
             this.contains = contains;
         }
     }
-    getInnerHTML() {
+    Square.prototype.getInnerHTML = function () {
         if (this.contains == null) {
             if (this.currLegalMove) {
                 return '<img class="piece" src="./images/legal_move.png"/>';
@@ -18,5 +21,7 @@ export class Square {
             return "";
         }
         return this.contains.getInnerHTML(this.currLegalMove);
-    }
-}
+    };
+    return Square;
+}());
+exports.Square = Square;

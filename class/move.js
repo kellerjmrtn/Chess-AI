@@ -1,5 +1,8 @@
-export class Move {
-    constructor(startSquare, endSquare, board) {
+"use strict";
+exports.__esModule = true;
+exports.Move = void 0;
+var Move = /** @class */ (function () {
+    function Move(startSquare, endSquare, board) {
         this.startRank = startSquare[0];
         this.startFile = startSquare[1];
         this.endRank = endSquare[0];
@@ -12,9 +15,9 @@ export class Move {
         else {
             this.pieceMovedFirstMove = false;
         }
-        let king = board.squares[0][4].contains;
-        let rookKing = board.squares[0][7].contains;
-        let rookQueen = board.squares[0][0].contains;
+        var king = board.squares[0][4].contains;
+        var rookKing = board.squares[0][7].contains;
+        var rookQueen = board.squares[0][0].contains;
         this.castleQueenSide = false;
         this.castleKingSide = false;
         if (this.pieceMoved.name == "king" && king && !king.hasMoved) {
@@ -26,4 +29,6 @@ export class Move {
             }
         }
     }
-}
+    return Move;
+}());
+exports.Move = Move;

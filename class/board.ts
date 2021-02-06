@@ -600,7 +600,12 @@ export class Board {
             let len: number = allPossibleMoves.length;
 
             for(let i = 0; i < len; i++){
-                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, false);
+                if(allPossibleMoves[i].pieceCaptured){
+                    evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth, alpha, beta, false);
+                } else {
+                    evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, false);
+                }
+                
                 boardState.undoLastMove(false);
                 maxEval = Math.max(maxEval, evaluation);
                 alpha = Math.max(alpha, evaluation);

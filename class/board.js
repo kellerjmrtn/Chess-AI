@@ -1,11 +1,8 @@
-"use strict";
-exports.__esModule = true;
-exports.Board = void 0;
-var square_js_1 = require("./square.js");
-var allPieces_js_1 = require("./allPieces.js");
-var move_js_1 = require("./move.js");
-var Board = /** @class */ (function () {
-    function Board() {
+import { Square } from "./square.js";
+import { Rook, Knight, Bishop, Queen, King, Pawn } from "./allPieces.js";
+import { Move } from "./move.js";
+export class Board {
+    constructor() {
         this.turn = 0;
         this.squares = this.populateSquares();
         this.isMouseDown = false;
@@ -15,21 +12,21 @@ var Board = /** @class */ (function () {
         this.whiteHasCastled = false;
         this.blackHasCastled = false;
     }
-    Board.prototype.addStaticEventListeners = function () {
-        var self = this;
+    addStaticEventListeners() {
+        let self = this;
         document.querySelectorAll(".square").forEach(function (item) {
             item.addEventListener("mouseup", function () {
                 if (self.selectedPiece != null) {
                     // This code will run when a piece (self.selectedPiece) is attempting to move
-                    var id = item.id.split("-")[1];
-                    var fileEnd = Number(id[0]) - 1;
-                    var rankEnd = Number(id[1]) - 1;
+                    let id = item.id.split("-")[1];
+                    let fileEnd = Number(id[0]) - 1;
+                    let rankEnd = Number(id[1]) - 1;
                     id = self.selectedPiece.id.split("-")[1];
-                    var fileStart = Number(id[0]) - 1;
-                    var rankStart = Number(id[1]) - 1;
+                    let fileStart = Number(id[0]) - 1;
+                    let rankStart = Number(id[1]) - 1;
                     if (self.getSquare([rankStart, fileStart]).contains.color == self.whiteToMove) {
                         if (!(rankStart == rankEnd && fileStart == fileEnd)) {
-                            var move = new move_js_1.Move([rankStart, fileStart], [rankEnd, fileEnd], self);
+                            let move = new Move([rankStart, fileStart], [rankEnd, fileEnd], self);
                             self.attemptMove(move);
                         }
                     }
@@ -42,70 +39,70 @@ var Board = /** @class */ (function () {
         document.addEventListener("mouseup", function () {
             self.selectedPiece = null;
         });
-    };
-    Board.prototype.addDynamicEventListeners = function () {
-        var self = this;
+    }
+    addDynamicEventListeners() {
+        let self = this;
         document.querySelectorAll(".piece").forEach(function (item) {
             item.addEventListener("mousedown", function (e) {
                 e.preventDefault();
                 self.selectedPiece = item.parentElement;
             });
         });
-    };
-    Board.prototype.populateSquares = function () {
-        var squares = [];
-        for (var i = 0; i < 8; i++) {
+    }
+    populateSquares() {
+        let squares = [];
+        for (let i = 0; i < 8; i++) {
             squares[i] = [];
         }
-        squares[0][0] = new square_js_1.Square(0, 0, new allPieces_js_1.Rook(true));
-        squares[0][1] = new square_js_1.Square(0, 1, new allPieces_js_1.Knight(true));
-        squares[0][2] = new square_js_1.Square(0, 2, new allPieces_js_1.Bishop(true));
-        squares[0][3] = new square_js_1.Square(0, 3, new allPieces_js_1.Queen(true));
-        squares[0][4] = new square_js_1.Square(0, 4, new allPieces_js_1.King(true));
-        squares[0][5] = new square_js_1.Square(0, 5, new allPieces_js_1.Bishop(true));
-        squares[0][6] = new square_js_1.Square(0, 6, new allPieces_js_1.Knight(true));
-        squares[0][7] = new square_js_1.Square(0, 7, new allPieces_js_1.Rook(true));
-        for (var i = 0; i < 8; i++) {
-            squares[1][i] = new square_js_1.Square(1, i, new allPieces_js_1.Pawn(true));
+        squares[0][0] = new Square(0, 0, new Rook(true));
+        squares[0][1] = new Square(0, 1, new Knight(true));
+        squares[0][2] = new Square(0, 2, new Bishop(true));
+        squares[0][3] = new Square(0, 3, new Queen(true));
+        squares[0][4] = new Square(0, 4, new King(true));
+        squares[0][5] = new Square(0, 5, new Bishop(true));
+        squares[0][6] = new Square(0, 6, new Knight(true));
+        squares[0][7] = new Square(0, 7, new Rook(true));
+        for (let i = 0; i < 8; i++) {
+            squares[1][i] = new Square(1, i, new Pawn(true));
         }
-        for (var i = 2; i < 6; i++) {
-            for (var j = 0; j < 8; j++) {
-                squares[i][j] = new square_js_1.Square(i, j);
+        for (let i = 2; i < 6; i++) {
+            for (let j = 0; j < 8; j++) {
+                squares[i][j] = new Square(i, j);
             }
         }
-        for (var i = 0; i < 8; i++) {
-            squares[6][i] = new square_js_1.Square(6, i, new allPieces_js_1.Pawn(false));
+        for (let i = 0; i < 8; i++) {
+            squares[6][i] = new Square(6, i, new Pawn(false));
         }
-        squares[7][0] = new square_js_1.Square(7, 0, new allPieces_js_1.Rook(false));
-        squares[7][1] = new square_js_1.Square(7, 1, new allPieces_js_1.Knight(false));
-        squares[7][2] = new square_js_1.Square(7, 2, new allPieces_js_1.Bishop(false));
-        squares[7][3] = new square_js_1.Square(7, 3, new allPieces_js_1.Queen(false));
-        squares[7][4] = new square_js_1.Square(7, 4, new allPieces_js_1.King(false));
-        squares[7][5] = new square_js_1.Square(7, 5, new allPieces_js_1.Bishop(false));
-        squares[7][6] = new square_js_1.Square(7, 6, new allPieces_js_1.Knight(false));
-        squares[7][7] = new square_js_1.Square(7, 7, new allPieces_js_1.Rook(false));
+        squares[7][0] = new Square(7, 0, new Rook(false));
+        squares[7][1] = new Square(7, 1, new Knight(false));
+        squares[7][2] = new Square(7, 2, new Bishop(false));
+        squares[7][3] = new Square(7, 3, new Queen(false));
+        squares[7][4] = new Square(7, 4, new King(false));
+        squares[7][5] = new Square(7, 5, new Bishop(false));
+        squares[7][6] = new Square(7, 6, new Knight(false));
+        squares[7][7] = new Square(7, 7, new Rook(false));
         return squares;
-    };
-    Board.prototype.refreshBoard = function (justUndidMove) {
-        var element;
-        for (var i = 0; i < this.squares.length; i++) {
-            for (var j = 0; j < this.squares[i].length; j++) {
+    }
+    refreshBoard(justUndidMove) {
+        let element;
+        for (let i = 0; i < this.squares.length; i++) {
+            for (let j = 0; j < this.squares[i].length; j++) {
                 element = document.querySelector("#sq-" + (j + 1) + (i + 1));
                 element.innerHTML = this.squares[i][j].getInnerHTML();
             }
         }
         if (!this.whiteToMove && !justUndidMove) {
-            var self_1 = this;
+            let self = this;
             setTimeout(function () {
-                self_1.takeAIMove();
+                self.takeAIMove();
             }, 10);
         }
         this.addDynamicEventListeners();
-    };
-    Board.prototype.attemptMove = function (move) {
-        var startSquare = this.squares[move.startRank][move.startFile];
-        var endSquare = this.squares[move.endRank][move.endFile];
-        var allMoves = this.getAllPossibleMoves();
+    }
+    attemptMove(move) {
+        let startSquare = this.squares[move.startRank][move.startFile];
+        let endSquare = this.squares[move.endRank][move.endFile];
+        let allMoves = this.getAllPossibleMoves();
         // check if move is legal
         if (allMoves.some(function (item) {
             return item.endFile == move.endFile && item.endRank == move.endRank && item.startFile == move.startFile && item.startRank == move.startRank;
@@ -115,7 +112,7 @@ var Board = /** @class */ (function () {
                 startSquare.contains.hasMoved = true;
             }
             if (move.castleKingSide) {
-                var rookSquare = this.getSquare([0, 7]);
+                let rookSquare = this.getSquare([0, 7]);
                 this.getSquare([0, 5]).contains = rookSquare.contains;
                 rookSquare.contains = null;
                 if (this.whiteToMove) {
@@ -135,29 +132,28 @@ var Board = /** @class */ (function () {
         else {
             console.log("Illegal Move attempted");
         }
-    };
-    Board.prototype.getAllPossibleMoves = function () {
-        var allMoves = [];
-        var allMovesTemp = [];
-        var currentSquare;
-        for (var i = 0; i < this.squares.length; i++) {
-            for (var j = 0; j < this.squares[i].length; j++) {
+    }
+    getAllPossibleMoves() {
+        let allMoves = [];
+        let allMovesTemp = [];
+        let currentSquare;
+        for (let i = 0; i < this.squares.length; i++) {
+            for (let j = 0; j < this.squares[i].length; j++) {
                 currentSquare = this.squares[i][j];
                 //console.log(currentSquare.contains, this.whiteToMove);
                 if (currentSquare.contains && currentSquare.contains.color == this.whiteToMove) {
                     allMovesTemp = this.getAllMoves(currentSquare);
                     if (allMovesTemp) {
-                        for (var _i = 0, allMovesTemp_1 = allMovesTemp; _i < allMovesTemp_1.length; _i++) {
-                            var i_1 = allMovesTemp_1[_i];
-                            allMoves.push(i_1);
+                        for (let i of allMovesTemp) {
+                            allMoves.push(i);
                         }
                     }
                 }
             }
         }
         return allMoves;
-    };
-    Board.prototype.getAllMoves = function (currentSquare) {
+    }
+    getAllMoves(currentSquare) {
         if (currentSquare.contains.name == "pawn") {
             return this.getAllPawnMoves(currentSquare.rank, currentSquare.file);
         }
@@ -176,53 +172,53 @@ var Board = /** @class */ (function () {
         else if (currentSquare.contains.name == "knight") {
             return this.getAllKnightMoves(currentSquare.rank, currentSquare.file);
         }
-    };
-    Board.prototype.getAllPawnMoves = function (rank, file) {
-        var possibleMoves = [];
-        var squareTemp;
+    }
+    getAllPawnMoves(rank, file) {
+        let possibleMoves = [];
+        let squareTemp;
         if (this.whiteToMove) {
             squareTemp = this.getSquareUp([rank, file]);
             if (squareTemp && !this.contains(squareTemp)) {
-                possibleMoves.push(new move_js_1.Move([rank, file], [rank + 1, file], this));
+                possibleMoves.push(new Move([rank, file], [rank + 1, file], this));
             }
             squareTemp = this.getSquareUp(this.getSquareUp([rank, file]));
             if (squareTemp && !this.contains(squareTemp) && !this.hasPieceMoved([rank, file]) && !this.contains(this.getSquareUp([rank, file]))) {
-                possibleMoves.push(new move_js_1.Move([rank, file], [rank + 2, file], this));
+                possibleMoves.push(new Move([rank, file], [rank + 2, file], this));
             }
             squareTemp = this.getSquareRight(this.getSquareUp([rank, file]));
             if (squareTemp && this.contains(squareTemp) && this.contains(squareTemp).color != this.whiteToMove) {
-                possibleMoves.push(new move_js_1.Move([rank, file], [rank + 1, file + 1], this));
+                possibleMoves.push(new Move([rank, file], [rank + 1, file + 1], this));
             }
             squareTemp = this.getSquareLeft(this.getSquareUp([rank, file]));
             if (squareTemp && this.contains(squareTemp) && this.contains(squareTemp).color != this.whiteToMove) {
-                possibleMoves.push(new move_js_1.Move([rank, file], [rank + 1, file - 1], this));
+                possibleMoves.push(new Move([rank, file], [rank + 1, file - 1], this));
             }
         }
         else {
             squareTemp = this.getSquareDown([rank, file]);
             if (squareTemp && !this.contains(squareTemp)) {
-                possibleMoves.push(new move_js_1.Move([rank, file], [rank - 1, file], this));
+                possibleMoves.push(new Move([rank, file], [rank - 1, file], this));
             }
             squareTemp = this.getSquareDown(this.getSquareDown([rank, file]));
             if (squareTemp && !this.contains(squareTemp) && !this.hasPieceMoved([rank, file]) && !this.contains(this.getSquareDown([rank, file]))) {
-                possibleMoves.push(new move_js_1.Move([rank, file], [rank - 2, file], this));
+                possibleMoves.push(new Move([rank, file], [rank - 2, file], this));
             }
             squareTemp = this.getSquareRight(this.getSquareDown([rank, file]));
             if (squareTemp && this.contains(squareTemp) && this.contains(squareTemp).color != this.whiteToMove) {
-                possibleMoves.push(new move_js_1.Move([rank, file], [rank - 1, file + 1], this));
+                possibleMoves.push(new Move([rank, file], [rank - 1, file + 1], this));
             }
             squareTemp = this.getSquareLeft(this.getSquareDown([rank, file]));
             if (squareTemp && this.contains(squareTemp) && this.contains(squareTemp).color != this.whiteToMove) {
-                possibleMoves.push(new move_js_1.Move([rank, file], [rank - 1, file - 1], this));
+                possibleMoves.push(new Move([rank, file], [rank - 1, file - 1], this));
             }
         }
         return possibleMoves;
-    };
-    Board.prototype.getAllRookMoves = function (rank, file) {
-        var possibleMoves = [];
-        var squareTemp;
-        var squareObjTemp;
-        var run;
+    }
+    getAllRookMoves(rank, file) {
+        let possibleMoves = [];
+        let squareTemp;
+        let squareObjTemp;
+        let run;
         // Check Moves in Upward Direction
         run = true;
         squareTemp = [rank, file];
@@ -268,12 +264,12 @@ var Board = /** @class */ (function () {
             }
         }
         return possibleMoves;
-    };
-    Board.prototype.getAllBishopMoves = function (rank, file) {
-        var possibleMoves = [];
-        var squareTemp;
-        var squareObjTemp;
-        var run;
+    }
+    getAllBishopMoves(rank, file) {
+        let possibleMoves = [];
+        let squareTemp;
+        let squareObjTemp;
+        let run;
         // Check Moves in Upward-Rightward Direction
         run = true;
         squareTemp = [rank, file];
@@ -319,19 +315,19 @@ var Board = /** @class */ (function () {
             }
         }
         return possibleMoves;
-    };
-    Board.prototype.getAllQueenMoves = function (rank, file) {
-        var possibleMoves = this.getAllRookMoves(rank, file);
-        var possibleBishopMoves = this.getAllBishopMoves(rank, file);
-        var len = possibleBishopMoves.length;
-        for (var i = 0; i < len; i++) {
+    }
+    getAllQueenMoves(rank, file) {
+        let possibleMoves = this.getAllRookMoves(rank, file);
+        let possibleBishopMoves = this.getAllBishopMoves(rank, file);
+        let len = possibleBishopMoves.length;
+        for (let i = 0; i < len; i++) {
             possibleMoves.push(possibleBishopMoves[i]);
         }
         return possibleMoves;
-    };
-    Board.prototype.getAllKingMoves = function (rank, file) {
-        var possibleMoves = [];
-        var squareTemp;
+    }
+    getAllKingMoves(rank, file) {
+        let possibleMoves = [];
+        let squareTemp;
         squareTemp = this.getSquareUp([rank, file]);
         this.checkLegalMove([rank, file], squareTemp, possibleMoves);
         squareTemp = this.getSquareDown([rank, file]);
@@ -357,17 +353,17 @@ var Board = /** @class */ (function () {
                 if (squareTemp && !this.getSquare(squareTemp).contains) {
                     squareTemp = this.getSquareRight(squareTemp);
                     if (squareTemp && this.getSquare(squareTemp).contains && this.getSquare(squareTemp).contains.name == "rook" && this.getSquare(squareTemp).contains.hasMoved == false) {
-                        possibleMoves.push(new move_js_1.Move([rank, file], [rank, file + 2], this));
+                        possibleMoves.push(new Move([rank, file], [rank, file + 2], this));
                     }
                 }
             }
         }
         return possibleMoves;
-    };
-    Board.prototype.getAllKnightMoves = function (rank, file) {
-        var possibleMoves = [];
-        var squareTemp;
-        var squareTemp2;
+    }
+    getAllKnightMoves(rank, file) {
+        let possibleMoves = [];
+        let squareTemp;
+        let squareTemp2;
         squareTemp2 = this.getSquareUp(this.getSquareUp([rank, file]));
         squareTemp = this.getSquareRight(squareTemp2);
         this.checkLegalMove([rank, file], squareTemp, possibleMoves);
@@ -389,13 +385,13 @@ var Board = /** @class */ (function () {
         squareTemp = this.getSquareDown(squareTemp2);
         this.checkLegalMove([rank, file], squareTemp, possibleMoves);
         return possibleMoves;
-    };
-    Board.prototype.checkLegalMove = function (squareStart, squareEnd, possibleMoves) {
+    }
+    checkLegalMove(squareStart, squareEnd, possibleMoves) {
         if (this.getSquare(squareEnd) && (!this.contains(squareEnd) || this.contains(squareEnd).color != this.whiteToMove)) {
-            possibleMoves.push(new move_js_1.Move(squareStart, squareEnd, this));
+            possibleMoves.push(new Move(squareStart, squareEnd, this));
         }
-    };
-    Board.prototype.getSquare = function (square) {
+    }
+    getSquare(square) {
         // returns the square object located at the givven coordinates
         if (square && this.squares[square[0]]) {
             return this.squares[square[0]][square[1]];
@@ -403,51 +399,51 @@ var Board = /** @class */ (function () {
         else {
             return null;
         }
-    };
-    Board.prototype.getSquareUp = function (square) {
+    }
+    getSquareUp(square) {
         if (square && this.squares[square[0] + 1]) {
             return [square[0] + 1, square[1]];
         }
         else {
             return null;
         }
-    };
-    Board.prototype.getSquareDown = function (square) {
+    }
+    getSquareDown(square) {
         if (square && this.squares[square[0] - 1]) {
             return [square[0] - 1, square[1]];
         }
         else {
             return null;
         }
-    };
-    Board.prototype.getSquareRight = function (square) {
+    }
+    getSquareRight(square) {
         if (square && this.squares[square[1] + 1]) {
             return [square[0], square[1] + 1];
         }
         else {
             return null;
         }
-    };
-    Board.prototype.getSquareLeft = function (square) {
+    }
+    getSquareLeft(square) {
         if (square && this.squares[square[1] - 1]) {
             return [square[0], square[1] - 1];
         }
         else {
             return null;
         }
-    };
-    Board.prototype.contains = function (square) {
+    }
+    contains(square) {
         if (square && square.length == 2 && this.squares[square[0]] && this.squares[square[0]][square[1]] && this.squares[square[0]][square[1]].contains) {
             return this.squares[square[0]][square[1]].contains;
         }
         else {
             return null;
         }
-    };
-    Board.prototype.hasPieceMoved = function (square) {
+    }
+    hasPieceMoved(square) {
         if (square) {
-            var squareRank = this.squares[square[0]];
-            var file = square[1];
+            let squareRank = this.squares[square[0]];
+            let file = square[1];
             if (squareRank && squareRank[file] && squareRank[file].contains && squareRank[file].contains.hasMoved) {
                 return true;
             }
@@ -455,11 +451,11 @@ var Board = /** @class */ (function () {
                 return false;
             }
         }
-    };
-    Board.prototype.undoLastMove = function (refreshBoard) {
-        var lastMove = this.history.pop();
-        var startSquare = this.squares[lastMove.endRank][lastMove.endFile];
-        var endSquare = this.squares[lastMove.startRank][lastMove.startFile];
+    }
+    undoLastMove(refreshBoard) {
+        let lastMove = this.history.pop();
+        let startSquare = this.squares[lastMove.endRank][lastMove.endFile];
+        let endSquare = this.squares[lastMove.startRank][lastMove.startFile];
         if (startSquare.contains) {
             if (lastMove.pieceMovedFirstMove) {
                 startSquare.contains.hasMoved = false;
@@ -483,17 +479,17 @@ var Board = /** @class */ (function () {
         if (refreshBoard) {
             this.refreshBoard(true);
         }
-    };
-    Board.evaluatePosition = function (boardState, depth, alpha, beta, currentPlayer) {
+    }
+    static evaluatePosition(boardState, depth, alpha, beta, currentPlayer) {
         if (depth == 0) {
             return Board.evaluateSingularPosition(boardState);
         }
         if (currentPlayer) {
-            var maxEval = -1000000;
-            var evaluation = 0;
-            var allPossibleMoves = boardState.getAllPossibleMoves();
-            var len = allPossibleMoves.length;
-            for (var i = 0; i < len; i++) {
+            let maxEval = -1000000;
+            let evaluation = 0;
+            let allPossibleMoves = boardState.getAllPossibleMoves();
+            let len = allPossibleMoves.length;
+            for (let i = 0; i < len; i++) {
                 if (allPossibleMoves[i].pieceCaptured) {
                     evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth, alpha, beta, false);
                 }
@@ -510,11 +506,11 @@ var Board = /** @class */ (function () {
             return maxEval;
         }
         else {
-            var minEval = 1000000;
-            var evaluation = 0;
-            var allPossibleMoves = boardState.getAllPossibleMoves();
-            var len = allPossibleMoves.length;
-            for (var i = 0; i < len; i++) {
+            let minEval = 1000000;
+            let evaluation = 0;
+            let allPossibleMoves = boardState.getAllPossibleMoves();
+            let len = allPossibleMoves.length;
+            for (let i = 0; i < len; i++) {
                 evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, true);
                 boardState.undoLastMove(false);
                 minEval = Math.min(minEval, evaluation);
@@ -525,23 +521,23 @@ var Board = /** @class */ (function () {
             }
             return minEval;
         }
-    };
-    Board.evaluateSingularPosition = function (boardState) {
-        var len = boardState.squares.length;
-        var len2;
-        var contains;
-        var tempScore;
-        var totalBoardScore = 0;
+    }
+    static evaluateSingularPosition(boardState) {
+        let len = boardState.squares.length;
+        let len2;
+        let contains;
+        let tempScore;
+        let totalBoardScore = 0;
         if (boardState.whiteHasCastled) {
             totalBoardScore += .6;
         }
         else if (boardState.blackHasCastled) {
             totalBoardScore -= -10;
         }
-        var numPieces = 0;
-        for (var i = 0; i < len; i++) {
+        let numPieces = 0;
+        for (let i = 0; i < len; i++) {
             len2 = boardState.squares[i].length;
-            for (var j = 0; j < len2; j++) {
+            for (let j = 0; j < len2; j++) {
                 contains = boardState.contains([i, j]);
                 if (contains) {
                     numPieces++;
@@ -580,16 +576,16 @@ var Board = /** @class */ (function () {
             }
         }
         return totalBoardScore;
-    };
-    Board.applyMoveToBoard = function (boardState, move) {
+    }
+    static applyMoveToBoard(boardState, move) {
         // assume legal boardState!!!
-        var startSquare = boardState.squares[move.startRank][move.startFile];
-        var endSquare = boardState.squares[move.endRank][move.endFile];
+        let startSquare = boardState.squares[move.startRank][move.startFile];
+        let endSquare = boardState.squares[move.endRank][move.endFile];
         if (startSquare.contains) {
             startSquare.contains.hasMoved = true;
         }
         if (move.castleKingSide) {
-            var rookSquare = boardState.getSquare([0, 7]);
+            let rookSquare = boardState.getSquare([0, 7]);
             boardState.getSquare([0, 5]).contains = rookSquare.contains;
             rookSquare.contains = null;
             if (boardState.whiteToMove) {
@@ -605,17 +601,17 @@ var Board = /** @class */ (function () {
         boardState.turn++;
         boardState.whiteToMove = !boardState.whiteToMove;
         return boardState;
-    };
-    Board.prototype.takeAIMove = function () {
+    }
+    takeAIMove() {
         // assume AI is black
-        var allPossibleMoves = this.getAllPossibleMoves();
-        var len = allPossibleMoves.length;
-        var minEval = 1000000;
-        var evaluation;
-        var currentBestMoves = [];
-        var time = new Date().getTime();
+        let allPossibleMoves = this.getAllPossibleMoves();
+        let len = allPossibleMoves.length;
+        let minEval = 1000000;
+        let evaluation;
+        let currentBestMoves = [];
+        let time = new Date().getTime();
         console.log("thinking...");
-        for (var i = 0; i < len; i++) {
+        for (let i = 0; i < len; i++) {
             evaluation = Board.evaluatePosition(Board.applyMoveToBoard(this, allPossibleMoves[i]), 3, -10000000, 10000000, true);
             if (evaluation < minEval) {
                 minEval = evaluation;
@@ -630,11 +626,9 @@ var Board = /** @class */ (function () {
         console.log("Time to calculate: ", new Date().getTime() - time);
         console.log((minEval + 200).toFixed(2));
         this.attemptMove(currentBestMoves[Math.floor(Math.random() * currentBestMoves.length)]);
-    };
-    Board.prototype.beginGame = function () {
+    }
+    beginGame() {
         this.refreshBoard();
         this.addStaticEventListeners();
-    };
-    return Board;
-}());
-exports.Board = Board;
+    }
+}

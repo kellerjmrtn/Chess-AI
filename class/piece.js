@@ -1,13 +1,10 @@
-"use strict";
-exports.__esModule = true;
-exports.Piece = void 0;
-var Piece = /** @class */ (function () {
-    function Piece(color) {
+export class Piece {
+    constructor(color) {
         this.color = color;
         this.hasMoved = false;
     }
-    Piece.prototype.getInnerHTML = function (isLegalMove) {
-        var str;
+    getInnerHTML(isLegalMove) {
+        let str;
         if (isLegalMove) {
             str = '<img class="piece piece-legal-move" src="' + Piece.imgLoc + this.imgFile + '"/>';
         }
@@ -15,8 +12,6 @@ var Piece = /** @class */ (function () {
             str = '<img class="piece" src="' + Piece.imgLoc + this.imgFile + '"/>';
         }
         return str;
-    };
-    Piece.imgLoc = "./images/";
-    return Piece;
-}());
-exports.Piece = Piece;
+    }
+}
+Piece.imgLoc = "./images/";

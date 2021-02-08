@@ -735,7 +735,7 @@ export class Board {
         let time = new Date().getTime();
         console.log("thinking...");
         for(let i = 0; i < len; i++){
-            evaluation = Board.evaluatePosition(Board.applyMoveToBoard(this, allPossibleMoves[i]), 3, -10000000, 10000000, true);
+            evaluation = Board.evaluatePosition(Board.applyMoveToBoard(this, allPossibleMoves[i]), 1, -10000000, 10000000, true);
 
             if(evaluation < minEval){
                 minEval = evaluation;

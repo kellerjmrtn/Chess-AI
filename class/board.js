@@ -547,9 +547,9 @@ export class Board {
                     }
                     else if (contains.name == "knight" || contains.name == "bishop") {
                         tempScore = 3;
-                        if (contains.hasMoved) {
+                        /*if(contains.hasMoved){
                             tempScore += .5;
-                        }
+                        }*/
                     }
                     else if (contains.name == "rook") {
                         tempScore = 5;

@@ -480,8 +480,8 @@ export class Board {
             this.refreshBoard(true);
         }
     }
-    static evaluatePosition(boardState, depth, alpha, beta, currentPlayer) {
-        if (depth == 0) {
+    static evaluatePosition(boardState, depth, alpha, beta, currentPlayer, currentDepth) {
+        if (depth == 0 || currentDepth == 6) {
             return Board.evaluateSingularPosition(boardState);
         }
         if (currentPlayer) {
@@ -491,10 +491,10 @@ export class Board {
             let len = allPossibleMoves.length;
             for (let i = 0; i < len; i++) {
                 if (allPossibleMoves[i].pieceCaptured) {
-                    evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth, alpha, beta, false);
+                    evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth, alpha, beta, false, currentDepth++);
                 }
                 else {
-                    evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, false);
+                    evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, false, currentDepth++);
                 }
                 boardState.undoLastMove(false);
                 maxEval = Math.max(maxEval, evaluation);
@@ -511,7 +511,7 @@ export class Board {
             let allPossibleMoves = boardState.getAllPossibleMoves();
             let len = allPossibleMoves.length;
             for (let i = 0; i < len; i++) {
-                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, true);
+                evaluation = Board.evaluatePosition(Board.applyMoveToBoard(boardState, allPossibleMoves[i]), depth - 1, alpha, beta, true, currentDepth++);
                 boardState.undoLastMove(false);
                 minEval = Math.min(minEval, evaluation);
                 beta = Math.min(beta, evaluation);
@@ -612,7 +612,7 @@ export class Board {
         let time = new Date().getTime();
         console.log("thinking...");
         for (let i = 0; i < len; i++) {
-            evaluation = Board.evaluatePosition(Board.applyMoveToBoard(this, allPossibleMoves[i]), 2, -10000000, 10000000, true);
+            evaluation = Board.evaluatePosition(Board.applyMoveToBoard(this, allPossibleMoves[i]), 3, -10000000, 10000000, true, 1);
             if (evaluation < minEval) {
                 minEval = evaluation;
                 currentBestMoves = [];
